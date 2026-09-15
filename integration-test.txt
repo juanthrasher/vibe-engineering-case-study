@@ -1,0 +1,2 @@
+GitHub integration test from ChatGPT.
+If you can read this file, repository write access is working.
