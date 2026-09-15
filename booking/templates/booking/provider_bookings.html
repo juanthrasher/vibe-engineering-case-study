@@ -1,0 +1,32 @@
+{% extends "booking/base.html" %}
+
+{% block title %}Reservas{% endblock %}
+
+{% block content %}
+<h2>Reservas</h2>
+
+{% if bookings %}
+<table>
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Contato</th>
+            <th>Serviço</th>
+            <th>Horário</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.customer_name }}</td>
+            <td>{{ booking.customer_contact }}</td>
+            <td>{{ booking.service.name }}</td>
+            <td>{{ booking.slot.starts_at|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhuma reserva registrada.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "booking/base.html" %}
+
+{% block title %}Reservar horário{% endblock %}
+
+{% block content %}
+<h2>Reservar horário</h2>
+
+<p>
+    <strong>{{ slot.service.name }}</strong><br>
+    {{ slot.starts_at|date:"d/m/Y H:i" }}
+</p>
+
+{% if unavailable %}
+<p class="error">Este horário não está mais disponível.</p>
+<a href="{% url 'booking:available' %}">Voltar aos horários</a>
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.as_p }}
+    <button type="submit">Confirmar reserva</button>
+</form>
+{% endif %}
+{% endblock %}
