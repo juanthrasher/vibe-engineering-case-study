@@ -1,0 +1,36 @@
+{% extends "booking/base.html" %}
+
+{% block title %}Disponibilidade do prestador{% endblock %}
+
+{% block content %}
+<h2>Disponibilidade do prestador</h2>
+
+{% if service %}
+<p>Serviço atual: <strong>{{ service.name }}</strong> — {{ service.duration_minutes }} minutos.</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.as_p }}
+    <button type="submit">Adicionar horário</button>
+</form>
+
+<h3>Horários cadastrados</h3>
+{% if slots %}
+<ul>
+    {% for slot in slots %}
+    <li>
+        {{ slot.starts_at|date:"d/m/Y H:i" }}
+        {% if slot.booking %}
+            — reservado
+        {% else %}
+            — disponível
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nenhum horário cadastrado.</p>
+{% endif %}
+{% endblock %}
