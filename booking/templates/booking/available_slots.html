@@ -1,0 +1,24 @@
+{% extends "booking/base.html" %}
+
+{% block title %}Horários disponíveis{% endblock %}
+
+{% block content %}
+<h2>Horários disponíveis</h2>
+
+{% if slots %}
+<ul class="slot-list">
+    {% for slot in slots %}
+    <li>
+        <div>
+            <strong>{{ slot.service.name }}</strong><br>
+            {{ slot.starts_at|date:"d/m/Y H:i" }}
+            — {{ slot.service.duration_minutes }} minutos
+        </div>
+        <a href="{% url 'booking:book_slot' slot.id %}">Reservar</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nenhum horário disponível no momento.</p>
+{% endif %}
+{% endblock %}
