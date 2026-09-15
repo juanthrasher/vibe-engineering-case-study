@@ -38,5 +38,20 @@ jobs:
         run: |
           python manage.py shell -c "from booking.models import Booking; booking=Booking.objects.get(customer_contact='persist@example.test'); assert booking.customer_name == 'Persistência'"
 
+      - name: HTTP smoke test
+        run: |
+          python manage.py runserver 127.0.0.1:8000 --noreload > /tmp/e001-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent --show-error http://127.0.0.1:8000/ > /tmp/e001-home.html; then
+              break
+            fi
+            sleep 1
+          done
+          grep -q "Horários disponíveis" /tmp/e001-home.html
+          kill $SERVER_PID
+          trap - EXIT
+
       - name: Run tests
         run: python manage.py test -v 2
