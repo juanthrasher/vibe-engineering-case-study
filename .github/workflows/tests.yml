@@ -30,5 +30,13 @@ jobs:
       - name: Apply migrations
         run: python manage.py migrate --noinput
 
+      - name: Write persistence probe
+        run: |
+          python manage.py shell -c "from datetime import datetime; from django.utils import timezone; from booking.models import Service, AvailabilitySlot, Booking; service=Service.objects.get(name='Atendimento'); slot=AvailabilitySlot.objects.create(service=service, starts_at=timezone.make_aware(datetime(2030, 1, 1, 10, 0))); Booking.objects.create(slot=slot, customer_name='Persistência', customer_contact='persist@example.test')"
+
+      - name: Read persistence probe in a new process
+        run: |
+          python manage.py shell -c "from booking.models import Booking; booking=Booking.objects.get(customer_contact='persist@example.test'); assert booking.customer_name == 'Persistência'"
+
       - name: Run tests
         run: python manage.py test -v 2
