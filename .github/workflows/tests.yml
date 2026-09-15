@@ -38,18 +38,46 @@ jobs:
         run: |
           python manage.py shell -c "from booking.models import Booking; booking=Booking.objects.get(customer_contact='persist@example.test'); assert booking.customer_name == 'Persistência'"
 
-      - name: HTTP smoke test
+      - name: End-to-end HTTP booking flow
+        shell: bash
         run: |
+          set -euo pipefail
           python manage.py runserver 127.0.0.1:8000 --noreload > /tmp/e001-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
           for attempt in $(seq 1 20); do
-            if curl --fail --silent --show-error http://127.0.0.1:8000/ > /tmp/e001-home.html; then
+            if curl --fail --silent http://127.0.0.1:8000/ > /tmp/e001-home.html; then
               break
             fi
             sleep 1
           done
           grep -q "Horários disponíveis" /tmp/e001-home.html
+
+          curl --fail --silent -c /tmp/e001-cookies.txt             http://127.0.0.1:8000/provider/availability/             > /tmp/e001-provider.html
+          CSRF=$(grep -o 'name="csrfmiddlewaretoken" value="[^"]*"' /tmp/e001-provider.html | head -1 | sed 's/.*value="//;s/"$//')
+
+          curl --fail --silent --show-error             -b /tmp/e001-cookies.txt -c /tmp/e001-cookies.txt             -e http://127.0.0.1:8000/provider/availability/             -d "csrfmiddlewaretoken=$CSRF"             -d "starts_at=2030-01-02T10:00"             http://127.0.0.1:8000/provider/availability/             -o /tmp/e001-create-slot.html
+
+          curl --fail --silent http://127.0.0.1:8000/ > /tmp/e001-available.html
+          grep -q "02/01/2030 10:00" /tmp/e001-available.html
+          BOOK_PATH=$(grep -o '/book/[0-9]*/' /tmp/e001-available.html | head -1)
+
+          curl --fail --silent -b /tmp/e001-cookies.txt -c /tmp/e001-cookies.txt             "http://127.0.0.1:8000$BOOK_PATH" > /tmp/e001-book.html
+          CSRF=$(grep -o 'name="csrfmiddlewaretoken" value="[^"]*"' /tmp/e001-book.html | head -1 | sed 's/.*value="//;s/"$//')
+
+          curl --fail --silent --show-error             -b /tmp/e001-cookies.txt -c /tmp/e001-cookies.txt             -e "http://127.0.0.1:8000$BOOK_PATH"             -d "csrfmiddlewaretoken=$CSRF"             --data-urlencode "customer_name=Cliente HTTP"             --data-urlencode "customer_contact=http@example.test"             "http://127.0.0.1:8000$BOOK_PATH"             -o /tmp/e001-book-result.html
+
+          curl --fail --silent http://127.0.0.1:8000/provider/bookings/             > /tmp/e001-bookings.html
+          grep -q "Cliente HTTP" /tmp/e001-bookings.html
+          grep -q "http@example.test" /tmp/e001-bookings.html
+
+          curl --fail --silent http://127.0.0.1:8000/ > /tmp/e001-after.html
+          if grep -q "02/01/2030 10:00" /tmp/e001-after.html; then
+            echo "Booked slot is still public." >&2
+            exit 1
+          fi
+
           kill $SERVER_PID
           trap - EXIT
 
