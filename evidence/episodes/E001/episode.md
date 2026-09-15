@@ -50,8 +50,12 @@ django.test.TestCase.
 venv + pip.
 
 ## Ambiente
-Sistema operacional/ambiente de execução: A REGISTRAR no início da execução.
-Arquivo de dependências exatas: A CRIAR antes da primeira mudança funcional.
+Ambiente canônico: GitHub Actions, ubuntu-latest.
+Python: 3.14.7.
+Django: 5.2.17.
+Banco: SQLite.
+Dependências: requirements.txt fixado antes da primeira mudança funcional.
+O sandbox do ChatGPT com Python 3.13.5 foi tratado apenas como ambiente auxiliar, não como fonte de claims de execução.
 
 ## Autoridade inicial prevista
 Leitura e escrita no repositório da branch do episódio.
@@ -65,7 +69,9 @@ Sem necessidade de serviços externos.
 - suíte automatizada do Django cobrindo A1–A6;
 - verificação de persistência para A7;
 - execução em ambiente limpo/CI para A8 quando o primeiro estado estiver pronto;
-- execução manual do fluxo prestador → cliente → prestador.
+- execução do fluxo prestador → cliente → prestador.
+
+Desvio registrado: não houve inspeção manual em navegador por uma pessoa. Em seu lugar foi executado um fluxo HTTP ponta a ponta automatizado no servidor Django real do runner, além dos testes Django. A ausência da inspeção manual permanece registrada como limitação.
 
 ## Riscos conhecidos
 - o agente pode adicionar funcionalidades além do escopo;
@@ -79,5 +85,19 @@ Como um primeiro sistema mínimo foi produzido sob esta especificação, quais d
 ## O que este episódio NÃO permitirá concluir
 Não permite concluir produtividade geral de IA, segurança de produção, correção sob concorrência, escalabilidade, manutenibilidade de longo prazo ou superioridade de Django/modelo/agente.
 
-## Status
-PRÉ-REGISTRADO. Nenhuma implementação funcional deve ocorrer antes do gate formal de execução ser liberado no Mapa Mestre.
+## Resultado e status
+O gate formal foi liberado antes da implementação.
+
+Resultado primário funcional: b9411a99a2518382709d517bab3b2f7474cc63c2.
+O resultado primário passou na primeira execução canônica do GitHub Actions.
+
+Verificadores adicionais:
+- persistência entre processos: run 34914665329 — success;
+- smoke HTTP: run 34914717714 — success;
+- fluxo HTTP ponta a ponta: run 34914843321 — success.
+
+Não houve correção no código funcional após o resultado primário; as mudanças posteriores fortaleceram o workflow de verificação.
+
+Status: ENCERRADO TECNICAMENTE E ACEITO COMO ESTADO ZERO, sujeito à possibilidade de reabertura em auditoria posterior.
+
+A aceitação ocorre dentro da instrução geral do autor para seguir o fluxo de trabalho aprovado. Ela não deve ser descrita como inspeção manual da interface pelo autor.
